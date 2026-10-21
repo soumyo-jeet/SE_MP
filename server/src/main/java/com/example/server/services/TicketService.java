@@ -64,7 +64,9 @@ public class TicketService {
     @Transactional
     public Ticket findById(Long id, Long staffId, Boolean flag) {
         Ticket ticket = findById(id);
-        if(!ticket.getStaff().getId().equals(staffId))
+        if(
+                ticket.getStatus().equals(TicketStatus.OPEN) ||
+                        !ticket.getStaff().getId().equals(staffId))
             throw new RuntimeException("Not eligible for this ticket");
         return ticket;
     }
