@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
@@ -65,6 +66,48 @@ public class EmailService {
         helper.setFrom(fromEmail);
         helper.setTo(to);
         helper.setSubject("[" + ticketId + "] " + subject);
+        helper.setText(html, true);
+
+        // Send the email
+        mailSender.send(mimeMessage);
+    }
+
+
+    public void sendOtpEmail(
+            String to,
+            String userName,
+            String otp,
+            int expiryMinutes
+    ) throws MessagingException, IOException {
+
+        // Load the HTML template from resources
+        ClassPathResource resource =
+                new ClassPathResource("templates/otp-email.html");
+
+        // Read the template safely, including when packaged in a JAR
+        String html = Files.readString(
+                resource.getFile().toPath(),
+                StandardCharsets.UTF_8
+        );
+
+        // Replace placeholders with dynamic values
+        html = html.replace("{{userName}}", escapeHtml(userName))
+                .replace("{{otp}}", escapeHtml(otp))
+                .replace("{{expiryMinutes}}",
+                        String.valueOf(expiryMinutes));
+
+        // Construct the email
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        MimeMessageHelper helper = new MimeMessageHelper(
+                mimeMessage,
+                true,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject("IT Help Desk - Email Verification Code");
         helper.setText(html, true);
 
         // Send the email
