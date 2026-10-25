@@ -8,6 +8,7 @@ import com.example.server.models.Ticket;
 import com.example.server.models.UserDetailsImpl;
 import com.example.server.services.StaffService;
 import com.example.server.services.TicketService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,7 +48,7 @@ public class StaffController {
     @PutMapping("/ticket/{id}")
     public ResponseEntity<TicketResponseDTO> updateTicketStatus(
             @PathVariable("id") Long ticketId,
-            @RequestBody TicketStatusUpdateDTO ticketStatusUpdateDTO) {
+            @Valid @RequestBody TicketStatusUpdateDTO ticketStatusUpdateDTO) {
 
         UserDetailsImpl userDetails = (UserDetailsImpl)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal();

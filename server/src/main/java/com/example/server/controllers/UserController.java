@@ -9,6 +9,7 @@ import com.example.server.models.User;
 import com.example.server.models.UserDetailsImpl;
 import com.example.server.services.TicketService;
 import com.example.server.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +34,7 @@ public class UserController {
     // User actions
     @PostMapping("/ticket")
     public ResponseEntity<TicketResponseDTO> createTicket(
-            @RequestBody TicketRequestDTO ticketRequestDTO
+           @Valid @RequestBody TicketRequestDTO ticketRequestDTO
     ) {
         UserDetailsImpl userDetails = (UserDetailsImpl)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal();

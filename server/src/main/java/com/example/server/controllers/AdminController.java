@@ -10,6 +10,7 @@ import com.example.server.models.UserDetailsImpl;
 import com.example.server.repositories.TicketRepository;
 import com.example.server.services.StaffService;
 import com.example.server.services.TicketService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class AdminController {
     // staff management endpoints
     @PostMapping("/staff")
     public ResponseEntity<StaffResponseDTO> registerStaff(
-            @RequestBody StaffRequestDTO staffRequestDTO) {
+            @Valid @RequestBody StaffRequestDTO staffRequestDTO) {
         Staff staff = staffService.createStaff(staffRequestDTO);
         StaffResponseDTO staffResponseDTO = StaffResponseDTO.getStaffResponseDTO(staff);
         return new ResponseEntity<>(staffResponseDTO, HttpStatus.CREATED);
