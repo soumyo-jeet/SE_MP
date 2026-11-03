@@ -1,0 +1,19 @@
+
+services:
+  it-help-desk-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.vercel
+
+    container_name: it-help-desk-container
+
+    ports:
+      - "8080:80"
+
+    env_file:
+      - .env
+
+    environment:
+      PORT: 80
+
+    restart: unless-stopped
