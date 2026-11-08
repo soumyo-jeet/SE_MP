@@ -1,3 +1,4 @@
+
 package com.example.server.services;
 
 import com.example.server.enums.TicketStatus;
@@ -12,18 +13,18 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 @Service
 public class EmailService {
-    private JavaMailSender mailSender;
+
+    private final JavaMailSender mailSender;
+
     @Value("${spring.mail.username}")
     private String fromEmail;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
-
 
     public void sendMail(
             String to,
@@ -34,27 +35,19 @@ public class EmailService {
             String messageBody
     ) throws MessagingException, IOException {
 
-        // Load the HTML template from resources
-        ClassPathResource resource =
-                new ClassPathResource("templates/ticket-update.html");
+        // Load HTML template safely from JAR resources
+        String html = loadTemplate("templates/ticket-update.html");
 
-        String html = Files.readString(
-                resource.getFile().toPath(),
-                StandardCharsets.UTF_8
-        );
-
-        // Replace placeholders with dynamic values
+        // Replace placeholders
         html = html.replace("{{userName}}", escapeHtml(userName))
                 .replace("{{ticketId}}", escapeHtml(ticketId.toString()))
-                .replace("{{ticketStatus}}",
-                        escapeHtml(ticketStatus.name()))
+                .replace("{{ticketStatus}}", escapeHtml(ticketStatus.name()))
                 .replace("{{subject}}", escapeHtml(subject))
                 .replace("{{messageBody}}",
                         escapeHtml(messageBody)
                                 .replace("\r\n", "\n")
                                 .replace("\n", "<br>"));
 
-        // Construct the email
         MimeMessage mimeMessage = mailSender.createMimeMessage();
 
         MimeMessageHelper helper = new MimeMessageHelper(
@@ -68,10 +61,8 @@ public class EmailService {
         helper.setSubject("[" + ticketId + "] " + subject);
         helper.setText(html, true);
 
-        // Send the email
         mailSender.send(mimeMessage);
     }
-
 
     public void sendOtpEmail(
             String to,
@@ -80,23 +71,13 @@ public class EmailService {
             int expiryMinutes
     ) throws MessagingException, IOException {
 
-        // Load the HTML template from resources
-        ClassPathResource resource =
-                new ClassPathResource("templates/otp-email.html");
+        // Load OTP HTML template safely from JAR resources
+        String html = loadTemplate("templates/otp-email.html");
 
-        // Read the template safely, including when packaged in a JAR
-        String html = Files.readString(
-                resource.getFile().toPath(),
-                StandardCharsets.UTF_8
-        );
-
-        // Replace placeholders with dynamic values
         html = html.replace("{{userName}}", escapeHtml(userName))
                 .replace("{{otp}}", escapeHtml(otp))
-                .replace("{{expiryMinutes}}",
-                        String.valueOf(expiryMinutes));
+                .replace("{{expiryMinutes}}", String.valueOf(expiryMinutes));
 
-        // Construct the email
         MimeMessage mimeMessage = mailSender.createMimeMessage();
 
         MimeMessageHelper helper = new MimeMessageHelper(
@@ -110,8 +91,20 @@ public class EmailService {
         helper.setSubject("IT Help Desk - Email Verification Code");
         helper.setText(html, true);
 
-        // Send the email
         mailSender.send(mimeMessage);
+    }
+
+    // Common method to load HTML templates
+    private String loadTemplate(String templatePath) throws IOException {
+
+        ClassPathResource resource = new ClassPathResource(templatePath);
+
+        try (InputStream inputStream = resource.getInputStream()) {
+            return new String(
+                    inputStream.readAllBytes(),
+                    StandardCharsets.UTF_8
+            );
+        }
     }
 
     private String escapeHtml(String value) {
@@ -125,5 +118,4 @@ public class EmailService {
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
     }
-
 }
